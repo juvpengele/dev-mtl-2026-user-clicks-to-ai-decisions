@@ -1,0 +1,19 @@
+{
+  "name": "project-x-demo",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "v1-vite",
+    "v2-nextjs"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w v2-nextjs",
+    "build": "npm run build -w v2-nextjs",
+    "test": "npm run test -w shared && npm run test -w v2-nextjs",
+    "db:seed": "npm run db:seed -w shared",
+    "db:reset": "npm run db:reset -w shared"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

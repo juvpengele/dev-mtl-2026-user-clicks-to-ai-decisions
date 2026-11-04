@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "opentelemetry-mcp": {
+      "command": "uvx",
+      "args": [
+        "opentelemetry-mcp",
+        "--backend",
+        "jaeger",
+        "--url",
+        "http://localhost:16686"
+      ]
+    }
+  }
+}

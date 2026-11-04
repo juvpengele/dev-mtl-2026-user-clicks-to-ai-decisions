@@ -1,0 +1,130 @@
+.presenter-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0b0d11;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.pv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 24px;
+  border-bottom: 1px solid #222;
+}
+
+.pv-counter b {
+  font-size: 40px;
+  font-weight: 800;
+}
+
+.pv-counter b span {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.pv-step {
+  margin-left: 16px;
+  font: 500 22px var(--font-mono);
+  color: var(--ink-2);
+}
+
+.pv-black {
+  margin-left: 16px;
+  font: 700 16px var(--font-mono);
+  background: var(--bad);
+  color: #000;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.pv-timer {
+  font: 700 48px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pv-timer button {
+  font: 500 14px var(--font-sans);
+  background: #1d2129;
+  color: var(--ink-2);
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.pv-clock {
+  font: 500 28px var(--font-mono);
+  color: var(--ink-2);
+}
+
+.pv-progress {
+  height: 4px;
+  background: #1a1d24;
+}
+
+.pv-progress div {
+  height: 100%;
+  background: var(--trace);
+  transition: width 0.3s;
+}
+
+.pv-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+}
+
+.pv-current,
+.pv-side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+}
+
+.pv-label {
+  font: 600 15px var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.pv-frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #2a2f39;
+  background: #000;
+}
+
+.pv-notes {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font-size: 24px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  color: var(--ink);
+  background: #12151b;
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.pv-footer {
+  padding: 8px 24px;
+  font: 500 13px var(--font-mono);
+  color: var(--muted);
+  border-top: 1px solid #222;
+}

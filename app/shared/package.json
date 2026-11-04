@@ -1,0 +1,24 @@
+{
+  "name": "@project-x/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./database": "./src/database.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "db:seed": "node --import tsx scripts/database.ts seed",
+    "db:reset": "node --import tsx scripts/database.ts reset"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.6"
+  }
+}

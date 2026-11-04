@@ -1,0 +1,86 @@
+:root {
+  color: #263241;
+  background: #f5f6f8;
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+
+header {
+  background: #ffffff;
+  border-bottom: 1px solid #d8dde5;
+}
+
+.header-inner {
+  width: min(1080px, calc(100% - 48px));
+  min-height: 70px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #687384;
+  font-size: 16px;
+}
+
+.brand {
+  color: #2364aa;
+  font-size: 24px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+main {
+  width: min(1080px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 64px 0 100px;
+}
+
+.intro { max-width: 720px; margin-bottom: 64px; }
+.label {
+  margin: 0 0 14px;
+  color: #2364aa;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+h1 {
+  margin: 0 0 18px;
+  color: #1d2733;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+}
+
+.intro > p:last-child { font-size: 22px; line-height: 1.5; color: #596577; }
+.status { min-height: 300px; padding-top: 36px; font-size: 22px; color: #596577; }
+.status.error { color: #a32d2d; }
+.list-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+.list-heading h2 { margin: 0; font-size: 30px; }
+.list-heading span { color: #687384; }
+.events-list { border-top: 1px solid #cbd2dc; }
+.event {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 110px;
+  padding: 22px 26px;
+  background: #ffffff;
+  border: 1px solid #dfe3e9;
+  border-top: 0;
+}
+.event h3 { margin: 0 0 10px; color: #202b38; font-size: 24px; }
+.event time { color: #697587; font-size: 17px; }
+.event p { min-width: 120px; margin: 0; color: #697587; text-align: right; }
+.event strong { display: block; color: #2364aa; font-size: 28px; }
+
+@media (max-width: 620px) {
+  .header-inner, main { width: min(100% - 32px, 1080px); }
+  main { padding-top: 42px; }
+  .event { align-items: flex-start; padding: 20px; }
+  .event p { min-width: 86px; }
+}
