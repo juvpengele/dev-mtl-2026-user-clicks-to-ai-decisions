@@ -14,6 +14,31 @@ export function openDatabase(path = process.env.DATABASE_PATH ?? defaultDatabase
 
 export function applySchema(database: Database.Database) {
   database.exec(readFileSync(join(sharedDirectory, "schema.sql"), "utf8"));
+
+  const columns = new Set(
+    (database.prepare("PRAGMA table_info(events)").all() as Array<{ name: string }>).map(
+      ({ name }) => name,
+    ),
+  );
+  const migrations = [
+    ["city", "ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT 'Montréal'"],
+    [
+      "format",
+      "ALTER TABLE events ADD COLUMN format TEXT NOT NULL DEFAULT 'in_person' CHECK (format IN ('in_person', 'online'))",
+    ],
+    [
+      "speaker",
+      "ALTER TABLE events ADD COLUMN speaker TEXT NOT NULL DEFAULT 'Project X Guest'",
+    ],
+    [
+      "description",
+      "ALTER TABLE events ADD COLUMN description TEXT NOT NULL DEFAULT 'A practical technology session for builders and curious minds.'",
+    ],
+  ] as const;
+
+  for (const [column, sql] of migrations) {
+    if (!columns.has(column)) database.exec(sql);
+  }
 }
 
 function createRandom(seed: number) {
@@ -33,36 +58,80 @@ export function seedDatabase(database: Database.Database) {
 
   const random = createRandom(20251113);
   const topics = [
-    "Observable Systems",
-    "AI Engineering",
+    "Observable Systems in Practice",
+    "AI Engineering Without the Hype",
     "React at Scale",
-    "Cloud Native Night",
+    "Cloud Native Montréal",
     "TypeScript Deep Dive",
-    "Platform Engineering",
-    "Data & Decisions",
-    "Open Source Meetup",
+    "Platform Engineering Exchange",
+    "Data, Signals & Decisions",
+    "Open Source After Hours",
+    "Designing Reliable APIs",
+    "The Modern Web Runtime",
+    "Responsible AI Systems",
+    "Developer Experience Lab",
+    "Security for Product Teams",
+    "From Prototype to Production",
+    "Distributed Systems Stories",
   ];
-  const places = ["Montréal", "Toronto", "Ottawa", "Québec", "Online"];
-  const baseDate = new Date();
-  baseDate.setUTCHours(18, 0, 0, 0);
+  const cities = ["Montréal", "Toronto", "Ottawa", "Québec City", "Vancouver"];
+  const speakers = [
+    "Maya Chen",
+    "Noah Tremblay",
+    "Amara Okafor",
+    "Liam Patel",
+    "Sofia Rossi",
+    "Ethan Williams",
+    "Camille Roy",
+    "Lucas Martin",
+    "Priya Shah",
+    "Owen Clarke",
+    "Nadia Benali",
+    "Alex Kim",
+  ];
+  const descriptions = [
+    "A practical session with architecture patterns, production lessons, and techniques you can apply the next morning.",
+    "An honest conversation about the trade-offs teams encounter when promising ideas meet real users and real systems.",
+    "A hands-on tour of the tools, decisions, and small operational habits that help software teams move with confidence.",
+    "Stories from the field, including what failed, what changed, and the signals that finally made the problem understandable.",
+    "A clear, example-driven talk for engineers and product leaders who want better decisions without unnecessary complexity.",
+  ];
+  const firstEvent = Date.parse("2026-09-05T14:00:00.000Z");
+  const lastEvent = Date.parse("2027-01-31T20:00:00.000Z");
+  const eventCount = 150;
 
   const insertEvent = database.prepare(
-    "INSERT INTO events (title, date, capacity) VALUES (?, ?, ?)",
+    `INSERT INTO events
+      (title, date, capacity, city, format, speaker, description)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
   const insertReservation = database.prepare(
     "INSERT INTO reservations (event_id, created_at) VALUES (?, ?)",
   );
 
   database.transaction(() => {
-    for (let index = 0; index < 150; index += 1) {
-      const date = new Date(baseDate);
-      date.setUTCDate(baseDate.getUTCDate() + index + 1);
+    for (let index = 0; index < eventCount; index += 1) {
+      const progress = index / (eventCount - 1);
+      const date = new Date(firstEvent + Math.round((lastEvent - firstEvent) * progress));
+      date.setUTCHours([14, 18, 20][index % 3], 0, 0, 0);
       const capacity = 40 + Math.floor(random() * 161);
-      const title = `${topics[index % topics.length]} · ${places[index % places.length]}`;
-      const result = insertEvent.run(title, date.toISOString(), capacity);
+      const format = index % 4 === 0 ? "online" : "in_person";
+      const city = format === "online" ? "Online" : cities[index % cities.length];
+      const result = insertEvent.run(
+        topics[index % topics.length],
+        date.toISOString(),
+        capacity,
+        city,
+        format,
+        speakers[index % speakers.length],
+        descriptions[index % descriptions.length],
+      );
       const reserved = Math.floor(random() * Math.min(capacity, 90));
       for (let reservation = 0; reservation < reserved; reservation += 1) {
-        insertReservation.run(Number(result.lastInsertRowid), new Date().toISOString());
+        insertReservation.run(
+          Number(result.lastInsertRowid),
+          new Date(date.getTime() - (reservation + 1) * 86_400_000).toISOString(),
+        );
       }
     }
   })();

@@ -262,21 +262,25 @@ const INSTR_STEPS = [
 
 /* ---------- Trace waterfall ---------- */
 
+// Mirrors the real Jaeger trace from the demo app (page load → API route → one query per event).
 const SPANS: Span[] = [
-  { name: 'click: Reserve seat', service: 'browser', start: 0, dur: 186, depth: 0 },
-  { name: 'POST /api/reserve', service: 'next.js', start: 14, dur: 158, depth: 1 },
-  { name: 'SELECT events', service: 'postgres', start: 26, dur: 18, depth: 2 },
-  { name: 'INSERT reservations', service: 'postgres', start: 52, dur: 34, depth: 2 },
-  { name: 'UPDATE events', service: 'postgres', start: 94, dur: 22, depth: 2 },
+  { name: 'page: Load events', service: 'project-x-browser', start: 0, dur: 1034, depth: 0 },
+  { name: 'HTTP GET', service: 'project-x-browser', start: 2, dur: 1030, depth: 1 },
+  { name: 'GET /api/events', service: 'project-x', start: 108, dur: 892, depth: 2 },
+  { name: 'api route /api/events', service: 'project-x', start: 116, dur: 883, depth: 3 },
+  { name: 'getEventsWithSeatsLeft', service: 'project-x', start: 117, dur: 882, depth: 4 },
+  { name: 'db.select events', service: 'sqlite', start: 117, dur: 7, depth: 5 },
+  { name: 'db.select events', service: 'sqlite', start: 125, dur: 7, depth: 5 },
+  { name: '+ 149 more db.select events', service: '', start: 133, dur: 0, depth: 5, summary: true },
 ]
 
 function TraceWaterfall() {
   return (
     <div className="slide left">
       <div className="label" style={{ marginBottom: 40 }}>
-        John's first trace · <span style={{ color: 'var(--trace)' }}>4bf92f…4736</span> · 5 spans
+        John's first trace · <span style={{ color: 'var(--trace)' }}>4bf92f…4736</span> · 1 click · 151 queries
       </div>
-      <Waterfall spans={SPANS} maxMs={200} ticks={[0, 50, 100, 150, 200]} delay={0.4} />
+      <Waterfall spans={SPANS} maxMs={1100} ticks={[0, 250, 500, 750, 1000]} delay={0.4} speed={400} nameW={720} rowH={86} />
     </div>
   )
 }

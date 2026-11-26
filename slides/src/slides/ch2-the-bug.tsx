@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { Svg } from '../components/Diagram'
-import { BossToast, ChapterCard, JohnCorner } from '../components/Story'
+import { CodeBlock } from '../components/CodeBlock'
+import { BossToast, Caption, ChapterCard, JohnCorner, JohnThinks } from '../components/Story'
 import { Words } from '../components/Words'
 import { useSlide } from '../deck/SlideContext'
 import type { SlideDef } from '../deck/types'
@@ -38,7 +39,7 @@ function Suspect({ cx, text, at }: { cx: number; text: string; at: number }) {
 /**
  * The bug came first; now John wants to know where it's happening.
  * Step 0: v1's three boxes and the question. Steps 1–3: each suspect gets a "?" and goes dark:
- * he can't see inside any of them. Step 4: "No error. No crash. No idea."
+ * he can't see inside any of them. Steps 4–6: "No error." / "No crash." / "No idea.", one per click.
  */
 function WhereIsIt() {
   const { step } = useSlide()
@@ -57,10 +58,59 @@ function WhereIsIt() {
           <Suspect key={i} cx={cx} text={SUSPECTS[i]} at={i + 1} />
         ))}
       </Svg>
-      <div style={{ position: 'absolute', left: 140, top: 740 }}>
-        <Words text="No error. No crash. No idea." className="title" at={4} delay={0.3} stagger={0.2} spring="slow" style={{ fontSize: 88 }} />
+      <div style={{ position: 'absolute', left: 140, top: 740, display: 'flex', gap: 26 }}>
+        {['No error.', 'No crash.', 'No idea.'].map((text, i) => (
+          <Words key={text} text={text} className="title" at={4 + i} delay={0.1} stagger={0.15} spring="slow" style={{ fontSize: 88 }} />
+        ))}
       </div>
       <JohnCorner mood="worried" size={240} delay={0.6} />
+    </div>
+  )
+}
+
+// v1's real request path, with John's console.logs sprinkled in.
+const LOGS_CODE = `// src/App.tsx
+console.log('before fetch', Date.now())
+const res = await fetch('/api/events')
+console.log('after fetch', Date.now())
+
+// api/server.ts
+app.get('/api/events', async (req, res) => {
+  console.log('inside /api/events')
+  console.log('before query', Date.now())
+  const events = await getEventsWithSeatsLeft(db)
+  console.log('after query', Date.now())
+  res.json(events)
+})`
+// Step 0: the code. 1: before the API call. 2: after it. 3: inside the backend. 4: around the query. 5: all of them.
+const LOGS_STEPS = [{ lines: [] }, { lines: [2] }, { lines: [4] }, { lines: [8] }, { lines: [9, 11] }, { lines: [2, 4, 8, 9, 11] }]
+
+/** John does what we all do: console.log everywhere. */
+function ConsoleLogs() {
+  return (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <div style={{ position: 'absolute', left: 140, top: 64 }}>
+        <Words text="So John adds console.log." className="title" stagger={0.1} spring="soft" style={{ fontSize: 68 }} />
+      </div>
+      <div style={{ position: 'absolute', left: 140, top: 190, width: 1180 }}>
+        <CodeBlock code={LOGS_CODE} filename="debugging.ts" steps={LOGS_STEPS} fontSize={30} />
+      </div>
+      <div style={{ position: 'absolute', left: 1380, top: 300 }}>
+        <Words text="Everywhere." className="title" at={5} delay={0.2} spring="bouncy" from="scale" style={{ fontSize: 84 }} />
+      </div>
+      <JohnCorner mood="worried" size={240} delay={0.6} />
+    </div>
+  )
+}
+
+/** The one question. Step 1: he's still guessing. */
+function WhereIsTheTime() {
+  return (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <JohnThinks text="Where is the time going?" />
+      <Caption top={930}>
+        <Words text="Still guessing." className="label" at={1} stagger={0.1} style={{ fontSize: 40, color: 'var(--ink-2)' }} />
+      </Caption>
     </div>
   )
 }
@@ -68,7 +118,9 @@ function WhereIsIt() {
 const slides: SlideDef[] = [
   { id: 'card-the-bug', title: 'Chapter 2 · The bug', chapter: CH, steps: 1, Component: () => <ChapterCard n={CH} /> },
   { id: 'boss-slow', title: 'Boss: the app is slow', chapter: CH, steps: 1, Component: () => <BossToast text="Users say the app is slow." /> },
-  { id: 'where-is-it', title: 'Where is it slow? React, API, DB', chapter: CH, steps: 5, Component: WhereIsIt },
+  { id: 'where-is-it', title: 'Where is it slow? React, API, DB', chapter: CH, steps: 7, Component: WhereIsIt },
+  { id: 'console-logs', title: 'John adds console.log everywhere', chapter: CH, steps: 6, Component: ConsoleLogs },
+  { id: 'where-is-the-time', title: 'Where is the time going?', chapter: CH, steps: 2, Component: WhereIsTheTime },
 ]
 
 export default slides

@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { applySchema } from "./database";
+import { applySchema, seedDatabase } from "./database";
 import {
   getEventsWithSeatsLeft,
   getEventsWithSeatsLeftOptimized,
@@ -50,3 +50,33 @@ it.each(["n_plus_one", "optimized"] as const)(
     expect(event.seatsLeft).toBe(9);
   },
 );
+
+it("seeds rich events through January 2027", () => {
+  const seeded = new Database(":memory:");
+  try {
+    seedDatabase(seeded);
+    const summary = seeded.prepare(`
+      SELECT
+        COUNT(*) AS total,
+        MAX(date) AS lastDate,
+        SUM(CASE WHEN format = 'online' THEN 1 ELSE 0 END) AS onlineEvents,
+        COUNT(DISTINCT city) AS cities,
+        SUM(CASE WHEN speaker = '' OR description = '' THEN 1 ELSE 0 END) AS missingDetails
+      FROM events
+    `).get() as {
+      total: number;
+      lastDate: string;
+      onlineEvents: number;
+      cities: number;
+      missingDetails: number;
+    };
+
+    expect(summary.total).toBe(150);
+    expect(summary.lastDate.startsWith("2027-01-31T")).toBe(true);
+    expect(summary.onlineEvents).toBeGreaterThan(0);
+    expect(summary.cities).toBeGreaterThan(3);
+    expect(summary.missingDetails).toBe(0);
+  } finally {
+    seeded.close();
+  }
+});

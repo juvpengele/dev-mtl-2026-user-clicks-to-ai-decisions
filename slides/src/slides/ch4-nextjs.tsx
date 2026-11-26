@@ -2,60 +2,92 @@ import { motion, AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Avatar } from '../components/Avatar'
 import { DrawPath } from '../components/Diagram'
-import { AtomIcon, SearchIcon, SignalIcon } from '../components/Icons'
 import { BossSays, ChapterCard } from '../components/Story'
-import { Words } from '../components/Words'
 import { useSlide } from '../deck/SlideContext'
 import type { SlideDef } from '../deck/types'
 
 const CH = 3
 
-function NeedRow({ at, icon, text, from, fromColor }: { at: number; icon: ReactNode; text: string; from: string; fromColor: string }) {
-  const { step, initial, t } = useSlide()
-  return (
-    <motion.div
-      initial={initial}
-      animate={step >= at ? 'shown' : 'hidden'}
-      variants={{ hidden: { opacity: 0, x: -50 }, shown: { opacity: 1, x: 0 } }}
-      transition={t.spring('bouncy', at === 0 ? 0.5 : 0)}
-      style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 48 }}
-    >
-      <span style={{ width: 120, height: 120, borderRadius: 30, background: 'var(--surface)', border: '2px solid var(--surface-2)', display: 'grid', placeItems: 'center', flex: 'none' }}>
-        {icon}
-      </span>
-      <div>
-        <div style={{ fontSize: 68, fontWeight: 750, letterSpacing: '-0.02em' }}>{text}</div>
-        <div className="label" style={{ fontSize: 26, marginTop: 6, color: fromColor }}>
-          {from}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
+/* ---------- Version two: real business logic ---------- */
 
-function Needs() {
-  const { initial, t } = useSlide()
+const V2_FEATURES = ['Event details', 'Speakers', 'Capacity rules', 'Waitlists', 'Reservations that never double-book a seat']
+
+const V2_CAPTIONS: { text: string; sub?: string }[] = [
+  { text: '' },
+  { text: 'That’s real business logic.', sub: 'It can’t live in the browser. John needs a real server.' },
+]
+
+/**
+ * What the boss's "version two" means. The features land in one breath.
+ * Step 1: that's business logic, so John needs a real server.
+ */
+function VersionTwo() {
+  const { step, initial, t } = useSlide()
+  const caption = V2_CAPTIONS[Math.min(step, V2_CAPTIONS.length - 1)]
   return (
-    <div className="slide" style={{ flexDirection: 'row', gap: 120 }}>
-      <motion.div initial={initial === false ? false : { opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={t.spring('bouncy')}>
-        <Avatar who="john" size={500} />
+    <div className="slide" style={{ flexDirection: 'row', gap: 110, alignItems: 'center' }}>
+      <motion.div initial={initial === false ? false : { opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={t.spring('bouncy')} style={{ flex: 'none' }}>
+        <Avatar who="john" size={440} mood={step >= 1 ? 'neutral' : 'worried'} />
       </motion.div>
-      <div>
-        <Words text="What John needs" className="label" style={{ fontSize: 34, color: 'var(--ink-2)' }} />
-        <NeedRow at={0} icon={<SearchIcon />} text="Good SEO" from="the boss wants it" fromColor="var(--boss)" />
-        <NeedRow at={1} icon={<AtomIcon />} text="Keep React" from="John loves it · v1 is React" fromColor="var(--john)" />
-        <NeedRow at={2} icon={<SignalIcon />} text="Reliable telemetry" from="from the conference" fromColor="var(--ink-2)" />
+      <div style={{ width: 1080 }}>
+        <div className="label" style={{ fontSize: 30, color: 'var(--boss)' }}>
+          Project X · version two
+        </div>
+        <div style={{ marginTop: 26, display: 'flex', flexWrap: 'wrap', gap: 18 }}>
+          {V2_FEATURES.map((feature, i) => (
+            <motion.span
+              key={feature}
+              initial={initial === false ? false : { opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={t.spring('bouncy', 0.3 + i * 0.35)}
+              style={{
+                padding: '18px 32px',
+                borderRadius: 20,
+                background: 'var(--surface)',
+                border: '2px solid var(--surface-2)',
+                fontSize: 44,
+                fontWeight: 700,
+                letterSpacing: '-0.015em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {feature}
+            </motion.span>
+          ))}
+        </div>
+        <div style={{ position: 'relative', height: 200, marginTop: 70 }}>
+          <AnimatePresence initial={false} mode="popLayout">
+            {caption.text && (
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={t.spring('snappy')}
+              >
+                <div style={{ fontSize: 76, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{caption.text}</div>
+                {caption.sub && (
+                  <div className="body" style={{ marginTop: 18 }}>
+                    {caption.sub}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )
 }
 
-function Check({ at, delay, children }: { at: number; delay: number; children: ReactNode }) {
+/* ---------- React + Vite + Express → Next.js ---------- */
+
+function Check({ at, delay, children, color = 'var(--ok)' }: { at: number; delay: number; children: ReactNode; color?: string }) {
   const { step } = useSlide()
   const done = step >= at
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 28, marginTop: 30 }}>
-      <svg viewBox="0 0 80 80" width={64} height={64} style={{ flex: 'none' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 26 }}>
+      <svg viewBox="0 0 80 80" width={56} height={56} style={{ flex: 'none' }}>
         <motion.rect
           x={4}
           y={4}
@@ -66,20 +98,35 @@ function Check({ at, delay, children }: { at: number; delay: number; children: R
           animate={{ fill: done ? 'rgba(61,220,132,0.14)' : 'rgba(61,220,132,0)', stroke: done ? '#3ddc84' : '#3a4252' }}
           strokeWidth={4}
         />
-        <DrawPath d="M22,42 L35,55 L59,27" at={at} delay={delay} stroke="var(--ok)" width={8} spring="soft" />
+        <DrawPath d="M22,42 L35,55 L59,27" at={at} delay={delay} stroke={color} width={8} spring="soft" />
       </svg>
-      <span style={{ fontSize: 46, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{children}</span>
+      <motion.span
+        initial={false}
+        animate={{ opacity: done ? 1 : 0.35 }}
+        transition={{ duration: 0.3, delay: done ? delay : 0 }}
+        style={{ fontSize: 40, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}
+      >
+        {children}
+      </motion.span>
     </div>
   )
 }
 
+const MOVE_TITLES: { text: string; lead?: string }[] = [
+  { text: '' },
+  { text: '' },
+  { text: 'A product decision, not a telemetry one.' },
+  { text: 'That’s exactly where OpenTelemetry is mature.', lead: 'And then John notices something. He now has a server…' },
+]
+
 /**
  * Step 1: v1's separate pieces (Vite frontend, Express API) merge into one Next.js box. React stays.
- * Step 2: John's needs tick one after another.
+ * Step 2: the two product reasons tick. Step 3: after the decision, John discovers the server is where OpenTelemetry is mature.
  */
 function NextMove() {
   const { step, initial, t } = useSlide()
   const next = step >= 1
+  const title = MOVE_TITLES[Math.min(step, MOVE_TITLES.length - 1)]
   const box = {
     height: 200,
     borderRadius: 28,
@@ -106,7 +153,7 @@ function NextMove() {
         <span style={{ fontSize: 64, color: 'var(--muted)', fontWeight: 300 }}>+</span>
         <motion.div
           initial={false}
-          animate={{ width: next ? 470 : 400, borderColor: next ? '#f6f7f9' : '#3a4252', scale: next ? [1, 1.06, 1] : 1 }}
+          animate={{ width: next ? 440 : 400, borderColor: next ? '#f6f7f9' : '#3a4252', scale: next ? [1, 1.06, 1] : 1 }}
           transition={{ ...t.spring('bouncy'), scale: t.tween(0.5, 0.1) }}
           style={{ ...box, border: '3px solid', position: 'relative', overflow: 'hidden' }}
         >
@@ -121,7 +168,7 @@ function NextMove() {
             >
               <div style={{ fontSize: 52, fontWeight: 750 }}>{next ? 'Next.js' : 'Vite + Express'}</div>
               <div className="mono" style={{ fontSize: 26, color: 'var(--ink-2)', marginTop: 8 }}>
-                {next ? 'frontend + backend' : 'two separate apps'}
+                {next ? 'pages + a real server' : 'thin API'}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -131,26 +178,44 @@ function NextMove() {
         initial={initial === false ? false : { opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={t.spring('soft', 0.2)}
-        style={{ width: 720 }}
+        style={{ width: 660 }}
       >
         <div className="label" style={{ fontSize: 30, color: 'var(--ink-2)' }}>
-          What John needs
+          Why Next.js
         </div>
         <Check at={2} delay={0}>
-          SEO: server rendering
+          A server for the business logic
         </Check>
         <Check at={2} delay={0.3}>
-          React stays
+          Keep React: the team knows it
         </Check>
-        <Check at={2} delay={0.6}>
-          Front + back, one app
-        </Check>
-        <Check at={2} delay={0.9}>
-          Telemetry on the server
-        </Check>
+        <div style={{ marginTop: 40 }}>
+          <Check at={3} delay={0.4}>
+            Bonus: telemetry on the server
+          </Check>
+        </div>
       </motion.div>
-      <div style={{ position: 'absolute', left: 140, right: 140, top: 790 }}>
-        <Words text="React stays. One app, front and back." className="title" at={2} delay={1.4} stagger={0.14} spring="slow" style={{ fontSize: 84, whiteSpace: "nowrap" }} />
+      <div style={{ position: 'absolute', left: 140, right: 140, top: 790, height: 120 }}>
+        <AnimatePresence initial={false} mode="popLayout">
+          {title.text && (
+            <motion.div
+              key={title.text}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={t.spring('soft', step === 2 ? 0.8 : 0.3)}
+            >
+              {title.lead && (
+                <div className="body" style={{ fontSize: 40, color: 'var(--ink-2)', marginBottom: 14, whiteSpace: 'nowrap' }}>
+                  {title.lead}
+                </div>
+              )}
+              <div className="title" style={{ fontSize: 64, whiteSpace: 'nowrap' }}>
+                {title.text}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -158,9 +223,9 @@ function NextMove() {
 
 const slides: SlideDef[] = [
   { id: 'card-nextjs', title: 'Chapter 4 · Next.js', chapter: CH, steps: 1, Component: () => <ChapterCard n={CH} /> },
-  { id: 'boss-seo', title: 'Boss: we need SEO', chapter: CH, steps: 1, Component: () => <BossSays text="We need good SEO. People have to find Project X." john="worried" /> },
-  { id: 'needs', title: 'What John needs', chapter: CH, steps: 3, Component: Needs },
-  { id: 'next-move', title: 'React + Express → Next.js', chapter: CH, steps: 3, Component: NextMove },
+  { id: 'boss-v2', title: 'Boss: now we need version two', chapter: CH, steps: 1, Component: () => <BossSays text="Users love Project X. Now we need version two." john="happy" /> },
+  { id: 'version-two', title: 'Version two: real business logic', chapter: CH, steps: 2, Component: VersionTwo },
+  { id: 'next-move', title: 'React + Vite + Express → Next.js', chapter: CH, steps: 4, Component: NextMove },
 ]
 
 export default slides

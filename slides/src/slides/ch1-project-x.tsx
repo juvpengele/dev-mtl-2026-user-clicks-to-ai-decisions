@@ -15,30 +15,121 @@ import { EVENTS_CODE } from './shared'
 
 const CH = 0
 
-function Title() {
+/** A full-slide layer that is only visible on one step of the slide (crossfades between steps). */
+function StepLayer({ show, children }: { show: boolean; children: ReactNode }) {
   const { initial, t } = useSlide()
   return (
-    <div className="slide left">
-      <Words text={talk.titleLine1} className="title" spring="bouncy" stagger={0.08} style={{ fontSize: 124 }} />
-      <motion.div
-        initial={initial === false ? false : { scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={t.spring('soft', 0.55)}
-        style={{ width: 280, height: 10, borderRadius: 5, background: 'var(--trace)', originX: 0, margin: '48px 0 40px' }}
-      />
-      <Words text={talk.titleLine2} className="body" delay={0.7} stagger={0.05} style={{ fontSize: 60, color: 'var(--ink-2)' }} />
-      <motion.div
-        initial={initial === false ? false : { opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={t.spring('soft', 1.4)}
-        style={{ marginTop: 120, display: 'flex', gap: 28, alignItems: 'baseline' }}
-      >
-        <span style={{ fontSize: 44, fontWeight: 750 }}>{talk.speaker}</span>
-        <span className="label" style={{ color: 'var(--ink-2)' }}>
-          {talk.event}
-        </span>
-      </motion.div>
-    </div>
+    <motion.div
+      initial={initial === false ? false : show ? false : { opacity: 0 }}
+      animate={{ opacity: show ? 1 : 0, y: show ? 0 : -24 }}
+      transition={show ? t.spring('soft', 0.15) : t.tween(0.25)}
+      style={{ position: 'absolute', inset: 0, pointerEvents: show ? 'auto' : 'none' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+const ABOUT_ME = [
+  'Software engineer · Montréal',
+  '~10 years building software',
+  'Certified Azure Solutions Architect & Azure Developer',
+  'Writes code with AI agents every week',
+]
+
+const TAKEAWAYS = [
+  'Follow one click from the browser to the database',
+  'Take it to the cloud without changing your code',
+  'Give AI agents the data to debug with you',
+]
+
+/** Step 0: title. Step 1: about me. Step 2: what you'll leave with. */
+function Title() {
+  const { step, initial, t } = useSlide()
+  return (
+    <>
+      <StepLayer show={step === 0}>
+        <div className="slide left">
+          <Words text={talk.titleLine1} className="title" spring="bouncy" stagger={0.08} style={{ fontSize: 124 }} />
+          <motion.div
+            initial={initial === false ? false : { scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={t.spring('soft', 0.55)}
+            style={{ width: 280, height: 10, borderRadius: 5, background: 'var(--trace)', originX: 0, margin: '48px 0 40px' }}
+          />
+          <Words text={talk.titleLine2} className="body" delay={0.7} stagger={0.05} style={{ fontSize: 60, color: 'var(--ink-2)' }} />
+          <motion.div
+            initial={initial === false ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={t.spring('soft', 1.4)}
+            style={{ marginTop: 120, display: 'flex', gap: 28, alignItems: 'baseline' }}
+          >
+            <span style={{ fontSize: 44, fontWeight: 750 }}>{talk.speaker}</span>
+            <span className="label" style={{ color: 'var(--ink-2)' }}>
+              {talk.event}
+            </span>
+          </motion.div>
+        </div>
+      </StepLayer>
+
+      <StepLayer show={step === 1}>
+        <div className="slide" style={{ flexDirection: 'row', gap: 96 }}>
+          <motion.div
+            initial={initial}
+            animate={step >= 1 ? 'shown' : 'hidden'}
+            variants={{ hidden: { opacity: 0, y: 80, scale: 0.85 }, shown: { opacity: 1, y: 0, scale: 1 } }}
+            transition={t.spring('bouncy', 0.1)}
+          >
+            <Avatar who="speaker" size={460} mood="happy" />
+          </motion.div>
+          <div style={{ maxWidth: 1160 }}>
+            <Words text="A few words about me" className="label" at={1} delay={0.2} stagger={0.05} />
+            <Words text={talk.speaker} className="title" at={1} delay={0.3} spring="bouncy" style={{ fontSize: 88, marginTop: 20 }} />
+            <div style={{ marginTop: 56, display: 'flex', flexDirection: 'column', gap: 26 }}>
+              {ABOUT_ME.map((line, i) => (
+                <motion.div
+                  key={line}
+                  initial={initial}
+                  animate={step >= 1 ? 'shown' : 'hidden'}
+                  variants={{ hidden: { opacity: 0, x: 40 }, shown: { opacity: 1, x: 0 } }}
+                  transition={t.spring('soft', 0.7 + i * 0.18)}
+                  className="body"
+                  style={{ fontSize: 44, display: 'flex', alignItems: 'center', gap: 24, whiteSpace: 'nowrap' }}
+                >
+                  <span style={{ width: 14, height: 14, borderRadius: 7, background: 'var(--john)', flexShrink: 0 }} />
+                  {line}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </StepLayer>
+
+      <StepLayer show={step === 2}>
+        <div className="slide left">
+          <Words text="You'll leave with" className="title" at={2} delay={0.2} spring="bouncy" style={{ fontSize: 96 }} />
+          <div style={{ marginTop: 80, display: 'flex', flexDirection: 'column', gap: 48 }}>
+            {TAKEAWAYS.map((line, i) => (
+              <motion.div
+                key={line}
+                initial={initial}
+                animate={step >= 2 ? 'shown' : 'hidden'}
+                variants={{ hidden: { opacity: 0, y: 40 }, shown: { opacity: 1, y: 0 } }}
+                transition={t.spring('soft', 0.6 + i * 0.35)}
+                style={{ display: 'flex', alignItems: 'baseline', gap: 40 }}
+              >
+                <span className="label" style={{ fontSize: 48, color: 'var(--ink-2)' }}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="body" style={{ fontSize: 58, color: 'var(--ink)', fontWeight: 650 }}>
+                  {line}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </StepLayer>
+    </>
   )
 }
 
@@ -356,7 +447,7 @@ function Shipped() {
 const slides: SlideDef[] = [
   // Step 1 holds on black while you walk on; the click types the line.
   { id: 'cold-open', title: 'Who made the decision?', chapter: CH, steps: 2, noJourney: true, Component: () => <WhoDecided at={1} /> },
-  { id: 'title', title: 'Title', chapter: CH, steps: 1, Component: Title },
+  { id: 'title', title: 'Title · About me · Takeaways', chapter: CH, steps: 3, Component: Title },
   { id: 'card-project-x', title: 'Chapter 1 · Project X', chapter: CH, steps: 1, Component: () => <ChapterCard n={CH} /> },
   { id: 'meet-john', title: 'Meet John Doe', chapter: CH, steps: 2, Component: MeetJohn },
   {

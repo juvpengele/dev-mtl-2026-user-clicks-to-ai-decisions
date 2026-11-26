@@ -34,6 +34,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) and Jaeger at [http://localhost:16686](http://localhost:16686).
 
+To run the entire presentation environment from the workspace root—slides, v1, v2, Jaeger, and the Collector—use:
+
+```bash
+./start-demo.sh
+```
+
+The script runs the slides on port `5173` and moves the v1 frontend to `5174` to avoid a collision. Press `Ctrl+C` once to stop all development servers; it also stops the observability containers if it started them. When `app/.env.azure.local` exists, the script automatically applies `docker-compose.azure.yml` so restarting the demo keeps dual export to Jaeger and Application Insights enabled.
+
 The defaults in `.env.example` make the problem visible on a laptop:
 
 ```dotenv
@@ -94,11 +102,52 @@ diff -u collector.local.yaml collector.cloud.yaml
 - [`collector.local.yaml`](collector.local.yaml) accepts OTLP/gRPC and OTLP/HTTP, permits the local browser origin, and exports to Jaeger.
 - [`collector.cloud.yaml`](collector.cloud.yaml) accepts the same signals and exports to Azure Monitor using `APPLICATIONINSIGHTS_CONNECTION_STRING`.
 
+Jaeger v2 uses [`jaeger/config.yaml`](jaeger/config.yaml) for its OTLP receiver, in-memory trace storage, and query UI. [`jaeger/config-ui.json`](jaeger/config-ui.json) disables automatic theme selection so the demo UI consistently uses light mode.
+
 The application code does not import an Azure SDK and does not change between destinations. In the Azure topology, server spans use the Collector sidecar at `localhost:4318`; set the browser exporter URL at image build time to a publicly reachable OTLP/HTTP endpoint if browser spans are required in the cloud demo.
+
+### Send local telemetry to Application Insights
+
+No application deployment is required. The Azure local override keeps Jaeger available and configures the local Collector to export every trace to both Jaeger and Application Insights.
+
+1. Copy the connection-string template and replace its value:
+
+   ```bash
+   cp .env.azure.example .env.azure.local
+   ```
+
+2. Start the dual-export Collector from the `app` directory:
+
+   ```bash
+   docker compose --env-file .env.azure.local \
+     -f docker-compose.yml \
+     -f docker-compose.azure.yml \
+     up -d
+   npm run dev
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) and load or reserve an event. Traces remain visible in local Jaeger and are also sent to Application Insights. Cloud ingestion commonly takes a few minutes; search **Transaction search** or run:
+
+   ```kusto
+   union requests, dependencies, traces
+   | where timestamp > ago(15m)
+   | order by timestamp desc
+   ```
+
+Stop the local services with the same Compose file set:
+
+```bash
+docker compose --env-file .env.azure.local \
+  -f docker-compose.yml \
+  -f docker-compose.azure.yml \
+  down
+```
+
+`.env.azure.local` is ignored by Git so the connection string stays in the local workspace.
 
 ## Claude Code + local Jaeger
 
-The checked-in [`.mcp.json`](.mcp.json) runs Traceloop’s OpenTelemetry MCP server with `uvx` and reads Jaeger at `http://localhost:16686`.
+The checked-in [`.mcp.json`](.mcp.json) connects Claude Code directly to Jaeger’s built-in MCP endpoint at `http://localhost:16686/api/ai/mcp/`. The local Jaeger configuration enables the MCP tools without enabling Jaeger’s optional chat assistant.
 
 ```bash
 claude mcp list

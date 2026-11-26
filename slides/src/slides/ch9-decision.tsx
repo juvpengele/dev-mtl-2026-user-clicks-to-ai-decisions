@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { QRCodeSVG } from 'qrcode.react'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { DrawPath, Svg } from '../components/Diagram'
 import { ChapterCard } from '../components/Story'
 import { Words } from '../components/Words'
@@ -8,6 +8,14 @@ import { talk } from '../config'
 import { useSlide } from '../deck/SlideContext'
 import type { SlideDef } from '../deck/types'
 import { WhoDecided } from './WhoDecided'
+import feedbackQr from '../assets/glodie-juvenal-pengele.png'
+
+// Three QR cards side by side: sized so they fit next to the "Thank you" column.
+const QR_BOX = 270
+const QR_PAD = 18
+const QR_SIZE = QR_BOX - QR_PAD * 2
+// The feedback PNG's quiet zone is ~10.6% per side (120px of 1130px); scale it up to trim it.
+const FEEDBACK_CROP = 1130 / (1130 - 2 * 120)
 
 const CH = 8
 
@@ -180,26 +188,12 @@ function QrCard({ label, children, delay }: { label: string; children: ReactNode
       transition={t.spring('bouncy', delay)}
       style={{ textAlign: 'center' }}
     >
-      <div style={{ width: 330, height: 330, padding: 22, background: '#f6f7f9', borderRadius: 28, lineHeight: 0 }}>{children}</div>
+      <div style={{ width: QR_BOX, height: QR_BOX, padding: QR_PAD, background: '#f6f7f9', borderRadius: 24, lineHeight: 0 }}>{children}</div>
       <div className="label" style={{ marginTop: 20, fontSize: 26, color: 'var(--ink-2)' }}>
         {label}
       </div>
     </motion.div>
   )
-}
-
-/** The organizers' QR image. Falls back to a labelled placeholder until public/feedback-qr.png exists. */
-function FeedbackQr() {
-  const [missing, setMissing] = useState(false)
-  if (missing)
-    return (
-      <div style={{ width: '100%', height: '100%', border: '4px dashed #9aa3b2', borderRadius: 12, display: 'grid', placeItems: 'center', lineHeight: 1.3, color: '#59606e', font: '600 22px var(--font-mono)' }}>
-        public/
-        <br />
-        feedback-qr.png
-      </div>
-    )
-  return <img src={import.meta.env.BASE_URL + talk.feedbackQr} alt="Feedback QR code" width={286} height={286} style={{ objectFit: 'contain' }} onError={() => setMissing(true)} />
 }
 
 function Thanks() {
@@ -222,17 +216,37 @@ function Thanks() {
         <motion.div {...fade(0.65)} className="mono" style={{ fontSize: 36, color: 'var(--ink-2)', marginTop: 16 }}>
           {talk.contact}
         </motion.div>
-        <motion.div {...fade(0.8)} className="mono" style={{ fontSize: 32, color: 'var(--ink-2)', marginTop: 12 }}>
-          {talk.repoUrl.replace(/^https?:\/\//, '')}
+        <motion.div {...fade(0.8)} className="mono" style={{ fontSize: 28, color: 'var(--ink-2)', marginTop: 12 }}>
+          {/* Long repo names: break after the owner, never mid-word. */}
+          {talk.repoUrl
+            .replace(/^https?:\/\//, '')
+            .split(/(?<=\/)(?=[^/]*$)/)
+            .map((part) => (
+              <div key={part} style={{ whiteSpace: 'nowrap' }}>
+                {part}
+              </div>
+            ))}
         </motion.div>
       </div>
-      <div style={{ display: 'flex', gap: 40 }}>
-        <QrCard label="Demo repo" delay={0.9}>
-          {/* Generated locally at render time: no network needed. */}
-          <QRCodeSVG value={talk.repoUrl} size={286} bgColor="#f6f7f9" fgColor="#050608" level="M" />
+      <div style={{ display: 'flex', gap: 32 }}>
+        <QrCard label="LinkedIn" delay={0.9}>
+          <QRCodeSVG value={talk.linkedinUrl} size={QR_SIZE} bgColor="#f6f7f9" fgColor="#050608" level="M" />
         </QrCard>
-        <QrCard label="Feedback" delay={1.05}>
-          <FeedbackQr />
+        <QrCard label="Demo repo" delay={1.05}>
+          {/* Generated locally at render time: no network needed. */}
+          <QRCodeSVG value={talk.repoUrl} size={QR_SIZE} bgColor="#f6f7f9" fgColor="#050608" level="M" />
+        </QrCard>
+        <QrCard label="Feedback" delay={1.2}>
+          {/* The PNG has a wide white border baked in: crop it so it matches the generated codes. */}
+          <div style={{ position: 'relative', width: QR_SIZE, height: QR_SIZE, overflow: 'hidden' }}>
+            <img
+              src={feedbackQr}
+              alt="Feedback QR code"
+              width={QR_SIZE * FEEDBACK_CROP}
+              height={QR_SIZE * FEEDBACK_CROP}
+              style={{ position: 'absolute', left: (QR_SIZE * (1 - FEEDBACK_CROP)) / 2, top: (QR_SIZE * (1 - FEEDBACK_CROP)) / 2, maxWidth: 'none' }}
+            />
+          </div>
         </QrCard>
       </div>
     </div>

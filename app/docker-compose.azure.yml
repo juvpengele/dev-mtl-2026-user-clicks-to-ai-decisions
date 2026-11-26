@@ -1,0 +1,6 @@
+services:
+  collector:
+    environment:
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING:?Set APPLICATIONINSIGHTS_CONNECTION_STRING in .env.azure.local}
+    volumes:
+      - ./collector.azure-local.yaml:/etc/otelcol-contrib/config.yaml:ro

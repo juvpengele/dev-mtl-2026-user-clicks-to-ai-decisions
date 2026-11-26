@@ -12,7 +12,7 @@ export async function getEventsWithSeatsLeft(
   db: DatabaseClient,
 ): Promise<EventWithSeatsLeft[]> {
   const events = await db.all<EventRecord>(
-    "SELECT id, title, date, capacity FROM events ORDER BY date ASC",
+    "SELECT id, title, date, capacity, city, format, speaker, description FROM events ORDER BY date ASC",
   );
 
   const eventsWithSeats: EventWithSeatsLeft[] = [];
@@ -40,10 +40,14 @@ export async function getEventsWithSeatsLeftOptimized(
       e.title,
       e.date,
       e.capacity,
+      e.city,
+      e.format,
+      e.speaker,
+      e.description,
       COUNT(r.id) AS reservationCount
     FROM events e
     LEFT JOIN reservations r ON r.event_id = e.id
-    GROUP BY e.id, e.title, e.date, e.capacity
+    GROUP BY e.id, e.title, e.date, e.capacity, e.city, e.format, e.speaker, e.description
     ORDER BY e.date ASC
   `);
 

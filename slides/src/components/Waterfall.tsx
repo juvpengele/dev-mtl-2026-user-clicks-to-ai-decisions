@@ -9,11 +9,11 @@ export interface Span {
   start: number
   dur: number
   depth: number
+  /** A text-only row (no bar), e.g. "+ 149 more queries". */
+  summary?: boolean
 }
 
-const NAME_W = 560
 const AXIS_H = 70
-const ROW_H = 104
 const BAR_H = 48
 
 /**
@@ -28,6 +28,8 @@ export function Waterfall({
   delay = 0,
   speed = 80,
   width = 1640,
+  nameW: NAME_W = 560,
+  rowH: ROW_H = 104,
 }: {
   spans: Span[]
   maxMs: number
@@ -36,6 +38,8 @@ export function Waterfall({
   delay?: number
   speed?: number
   width?: number
+  nameW?: number
+  rowH?: number
 }) {
   const { step, initial, t } = useSlide()
   const state = step >= at ? 'shown' : 'hidden'
@@ -56,6 +60,20 @@ export function Waterfall({
       {spans.map((s, i) => {
         const begin = delay + s.start / speed
         const grow = s.dur / speed
+        if (s.summary)
+          return (
+            <motion.div
+              key={i}
+              className="mono"
+              initial={initial}
+              animate={state}
+              variants={{ hidden: { opacity: 0 }, shown: { opacity: 1 } }}
+              transition={t.tween(0.3, begin, 'easeOut')}
+              style={{ position: 'absolute', left: s.depth * 40, top: AXIS_H + i * ROW_H, height: ROW_H, display: 'flex', alignItems: 'center', fontSize: 28, color: 'var(--muted)', whiteSpace: 'nowrap' }}
+            >
+              {s.name}
+            </motion.div>
+          )
         return (
           <div key={i} style={{ position: 'absolute', left: 0, top: AXIS_H + i * ROW_H, width, height: ROW_H }}>
             <motion.div

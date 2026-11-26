@@ -6,5 +6,6 @@ node_modules/
 *.sqlite-wal
 .env
 .env.local
+.env.azure.local
 coverage/
 .DS_Store

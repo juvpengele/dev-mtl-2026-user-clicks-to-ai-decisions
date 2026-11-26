@@ -10,6 +10,10 @@ export interface EventRecord {
   title: string;
   date: string;
   capacity: number;
+  city: string;
+  format: "in_person" | "online";
+  speaker: string;
+  description: string;
 }
 
 export interface EventWithSeatsLeft extends EventRecord {

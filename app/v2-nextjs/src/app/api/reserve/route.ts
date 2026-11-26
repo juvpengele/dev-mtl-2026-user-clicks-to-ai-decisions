@@ -4,7 +4,7 @@ import { run, tracedDb } from "@/server/database";
 
 export const runtime = "nodejs";
 
-type EventCapacity = { capacity: number; reserved: number };
+type EventCapacity = { capacity: number; reserved: number; date: string };
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as { eventId?: number };
@@ -21,16 +21,19 @@ export async function POST(request: NextRequest) {
   }
 
   const event = await tracedDb.get<EventCapacity>(
-    `SELECT e.capacity, COUNT(r.id) AS reserved
+    `SELECT e.capacity, e.date, COUNT(r.id) AS reserved
      FROM events e
      LEFT JOIN reservations r ON r.event_id = e.id
      WHERE e.id = ?
-     GROUP BY e.id, e.capacity`,
+     GROUP BY e.id, e.capacity, e.date`,
     [eventId],
   );
 
   if (!event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+  if (Date.parse(event.date) < Date.now()) {
+    return NextResponse.json({ error: "This event has ended" }, { status: 409 });
   }
   if (event.reserved >= event.capacity) {
     return NextResponse.json({ error: "This event is sold out" }, { status: 409 });

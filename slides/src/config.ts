@@ -7,10 +7,9 @@ export const talk = {
   city: 'Montréal',
   date: 'November 27, 2026',
   // Placeholders: replace before the talk.
-  contact: 'your-handle@example.com',
-  repoUrl: 'https://github.com/your-handle/project-x',
-  // Organizers' feedback QR code. Drop the image at public/feedback-qr.png.
-  feedbackQr: 'feedback-qr.png',
+  contact: 'juvenal.pengele@gmail.com',
+  linkedinUrl: 'https://www.linkedin.com/in/juvenal-pengele/',
+  repoUrl: 'https://github.com/juvpengele/dev-mtl-2026-user-clicks-to-ai-decisions',
   // Target talk length in minutes (slot is 45 incl. Q&A). The presenter timer turns amber 5 min before, red after.
   durationMinutes: 36,
 }

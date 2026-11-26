@@ -1,6 +1,6 @@
 Speaker notes. Each "## <slide-id>" heading holds the notes for that slide (see src/slides/ch*.tsx).
 "Click" = one step on that slide. ⏱ = time budget for the slide. Target: ~35 min total, slot is 45 incl. Q&A.
-Chapter budgets: 1 Project X 4:15 · 2 The bug 2:20 · 3 The talk 6:25 · 4 Next.js 2:35 · 5 Telemetry 7:45 · 6 Cloud 4:45 · 7 Cloud agent 3:05 · 8 Local agent 2:45 · 9 The decision 2:00
+Chapter budgets: 1 Project X 5:05 · 2 The bug 2:20 · 3 The talk 8:00 · 4 Next.js 2:35 · 5 Telemetry 7:45 · 6 Cloud 4:45 · 7 Cloud agent 3:05 · 8 Local agent 2:45 · 9 The decision 2:00
 
 ## cold-open
 ⏱ 0:20
@@ -8,8 +8,10 @@ Walk on with the screen black. Pause. Click: the question types in, word by word
 Open with the question. Don't answer it yet.
 
 ## title
-⏱ 0:30
+⏱ 1:20
 Introduce yourself in one sentence. "This is the story of one developer, and one click."
+Click: about me. "A few words about me. I'm a software engineer here in Montréal, with about ten years of experience. I'm a certified Azure Solutions Architect and Azure Developer, and like most of you, I work every day with AI agents that write code with me. So the question I just asked you isn't theoretical for me. I live it every week."
+Click: what you'll leave with. "In the next minutes, you'll learn three things. How to follow a single user click from the browser all the way to your database. How to take that to the cloud without changing your code. And how to give AI agents the data they need to debug with you."
 
 ## card-project-x
 ⏱ 0:05
@@ -52,14 +54,29 @@ The bug comes first. No details, no error message. Just: "the app is slow."
 ⏱ 1:45
 John's first question: where is it happening? Here's v1, exactly his plan.
 Click: React? Click: the API? Click: the database? Each one goes dark: he can't see inside any of them.
-Last click: "No error. No crash. No idea." Let it sit. That's debugging blind.
+Click: "No error." Pause. Click: "No crash." Pause. Click: "No idea." Let it sit. That's debugging blind.
+
+## console-logs
+⏱ 0:45
+The application works. It's just slow. So John does what many developers do when they don't know what's happening: he starts adding console logs. Everywhere.
+Click: one before the API call. Click: one after the API call. Click: one inside the backend. Click: another one around the database query. Click: they all light up: "Everywhere."
+
+## where-is-the-time
+⏱ 0:20
+He's trying to answer one simple question: where is the time going?
+Click: "Still guessing." But at this point, John is still guessing. And this is exactly where observability enters the story.
 
 ## card-the-talk
 ⏱ 0:05
 
+## meetup-post
+⏱ 0:35
+"That evening, John is scrolling LinkedIn." The feed scrolls; a post lands: the React Montréal meetup, and the next one is about observability. A talk called 'OpenTelemetry in Frontend Applications'.
+Click: John hits Attend. "Exactly what he needs."
+
 ## conference
 ⏱ 0:50
-"Last React conference, John was in the audience. He watched a talk called 'OpenTelemetry in Frontend Applications'."
+"So John goes to the React Montréal meetup. He's in the audience, watching 'OpenTelemetry in Frontend Applications'."
 Click: the speaker's name. It's me. Pause and let them get it: you're watching that talk right now.
 
 ## observability
@@ -69,8 +86,17 @@ Click: "Not by guessing. Not by adding console.logs and redeploying." That's exa
 
 ## three-signals
 ⏱ 1:00
-Traces, metrics, logs. Click: today we focus on traces.
-A trace answers "what happened to THIS request", across every service it touched.
+Logs, metrics, traces. One click per signal, one sentence each.
+Click: Logs. "What your code said happened, one line at a time."
+Click: Metrics. "Numbers over time: how many, how often, how slow."
+Click: Traces. "What happened to this one request, everywhere it went." Today we focus on traces.
+
+## trace-anatomy
+⏱ 1:00
+"A trace is made of spans." The waterfall replays one request: browser → Next.js → two queries.
+Click: "Each span is one step: an HTTP call, a database query."
+Click: "Spans are nested." The brackets show the browser span is the parent of the server span, and the server span is the parent of the two queries.
+Click: "And each one has a duration and attributes that describe it." Point at the card: 60 ms, sqlite, seats, and its parent. That's what you, and later an AI agent, will search on.
 
 ## opentelemetry
 ⏱ 2:00
@@ -79,38 +105,47 @@ Click: the SDK in your app creates spans. Click: OTLP, one wire format. Click: a
 This is the part that makes the rest of the story possible.
 
 ## otel-hope
-⏱ 1:40
-John walks out of the talk excited: "OpenTelemetry will show me where it's slow!"
-Click: then he reads the docs. In OpenTelemetry JS, browser instrumentation is still experimental.
-Click: server-side tracing is stable.
-Click: his app is a React app. Not for him. Not yet… John is sad. Pause on his face.
+⏱ 1:00
+John leaves the conference excited. "Finally, something better than console logs."
+Click: that night, he opens the OpenTelemetry docs. And he finds this. On the server, tracing is stable. Mature. Widely used.
+Click: in the browser? Still experimental. [Pause]
+
+## john-stuck
+⏱ 1:20
+Now think about John's app. Version one is almost all frontend: React, Vite, and a thin Express API in the middle that barely does anything.
+Click: so John has the right tool… and almost nowhere to use it. [Pause]
+Click: he can still instrument the browser a little. Enough to start a trace when the user clicks. But that's where his trace starts… and almost immediately, where it ends.
+Click: the browser is where a trace starts. It's not where it lives.
 
 ## card-nextjs
 ⏱ 0:05
 
-## boss-seo
+## boss-v2
 ⏱ 0:25
-The boss again: SEO. A client-rendered React + Vite app isn't great for that. John looks worried: another big change.
+John is already using React. So instead of rebuilding from scratch, he starts looking at Next.js. Why?
+A few days later, his boss comes back: "Users love Project X. Now we need version two."
 
-## needs
-⏱ 0:55
-What John needs now. Good SEO: the boss wants it.
-Click: keep React. He loves it, and v1 is already React.
-Click: reliable telemetry, from the conference.
+## version-two
+⏱ 0:50
+Event details. Speakers. Capacity rules. Waitlists. And reservations that never double-book a seat. [Pause]
+Click: that's real business logic. It can't live in the browser, and a thin Express API isn't enough anymore. John needs a real server.
 
 ## next-move
-⏱ 1:15
-v1 was two separate apps: React + Vite in front, Express behind.
-Click: they merge into one Next.js app. React stays.
-Click: everything ticks: SEO thanks to server rendering, React stays, frontend and backend in one app, and telemetry can live on the server, where OpenTelemetry is stable.
-The boss's SEO request came first. John's love of React decided the framework. The telemetry was a bonus.
+⏱ 1:10
+But he doesn't want to throw away what he built. His team knows React. The pages work.
+Click: so he picks Next.js, for two reasons. He gets a real server for the business logic, and he keeps React.
+Click: that decision was about the product, not about telemetry.
+Click: and then John notices something. [Pause] He now has a server. And that's exactly where OpenTelemetry is mature.
 
 ## card-telemetry
 ⏱ 0:05
 
 ## arch-v2
-⏱ 0:40
-Project X v2. Click: one request travels through all three. That amber path is one trace. Amber always means "the trace" in this talk.
+⏱ 0:50
+So he keeps the browser part small: start the trace when the user clicks, and pass it along. Everything after that, the business logic, the queries, the database, now runs somewhere he can actually watch.
+For the user, nothing changes. Same React app, same pages. But behind the scenes, John finally has a place to see what's happening.
+So the question becomes: can we follow one click all the way to the database? Let's try.
+Click: one request travels through all three. That amber path is one trace. Amber always means "the trace" in this talk.
 
 ## traceparent
 ⏱ 0:50

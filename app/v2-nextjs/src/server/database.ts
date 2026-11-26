@@ -1,4 +1,4 @@
-import { trace } from "@opentelemetry/api";
+import { SpanKind, trace } from "@opentelemetry/api";
 import type { DatabaseClient, QueryParameters } from "@project-x/shared";
 import {
   applySchema,
@@ -46,6 +46,7 @@ async function query<T>(
   return trace.getTracer("project-x-db").startActiveSpan(
     `db.${operation.toLowerCase()} events`,
     {
+      kind: SpanKind.CLIENT,
       attributes: {
         "db.system.name": "sqlite",
         "db.operation.name": operation,

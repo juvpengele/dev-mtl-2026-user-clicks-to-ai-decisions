@@ -27,16 +27,17 @@ export function EventDetail({ eventId }: { eventId: number }) {
     loadEvent().catch((error: Error) => setMessage(error.message)).finally(() => setLoading(false));
   }, [eventId]);
 
-  async function reserveSeat() {
+  async function respondToEvent() {
+    if (!event) return;
     setReserving(true);
     setMessage("");
     try {
       await withBrowserSpan(
-        "click: Reserve seat",
+        event.format === "online" ? "click: Attend online" : "click: Reserve seat",
         {
-          "ui.action": "reserve_seat",
+          "ui.action": event.format === "online" ? "attend_online" : "reserve_seat",
           "project_x.event_id": String(eventId),
-          "code.function.name": "reserveSeat",
+          "code.function.name": "respondToEvent",
         },
         async () => {
           const response = await fetch("/api/reserve", {
@@ -49,7 +50,11 @@ export function EventDetail({ eventId }: { eventId: number }) {
         },
       );
       setEvent((current) => current ? { ...current, seatsLeft: current.seatsLeft - 1 } : current);
-      setMessage("Your seat is reserved. See you there!");
+      setMessage(
+        event.format === "online"
+          ? "You're registered. Your access link is on its way!"
+          : "Your seat is reserved. See you there!",
+      );
     } catch (error) {
       setMessage((error as Error).message);
     } finally {
@@ -61,22 +66,45 @@ export function EventDetail({ eventId }: { eventId: number }) {
   if (!event) return <main className="detail-shell"><p className="events-state error">{message}</p></main>;
 
   const date = new Date(event.date);
+  const isPast = date.getTime() < Date.now();
+  const isOnline = event.format === "online";
+  const isSoldOut = event.seatsLeft < 1;
+  const buttonLabel = isPast
+    ? "Unavailable — event ended"
+    : reserving
+      ? isOnline ? "Registering…" : "Reserving…"
+      : isSoldOut
+        ? "Sold out"
+        : isOnline ? "Attend online" : "Reserve a seat";
   return (
     <main className="detail-shell">
       <Link href="/" className="back-link">← All events</Link>
       <article className="event-detail">
-        <p className="eyebrow">PROJECT X PRESENTS</p>
+        <div className="detail-kicker">
+          <p className="eyebrow">PROJECT X PRESENTS</p>
+          {isOnline && <span className="detail-format">Online event</span>}
+          {isPast && <span className="detail-past">Past event</span>}
+        </div>
         <h1>{event.title}</h1>
         <div className="detail-grid">
           <div><span>Date</span><strong>{date.toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</strong></div>
           <div><span>Time</span><strong>{date.toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" })}</strong></div>
-          <div><span>Availability</span><strong>{event.seatsLeft} seats left</strong></div>
+          <div><span>Location</span><strong>{isOnline ? "Online" : event.city}</strong></div>
+          <div><span>Availability</span><strong>{isPast ? "Event ended" : `${event.seatsLeft} seats left`}</strong></div>
         </div>
-        <p className="detail-copy">
-          Join builders, operators, and curious minds for an evening of useful ideas and honest conversations.
-        </p>
-        <button type="button" onClick={reserveSeat} disabled={reserving || event.seatsLeft < 1}>
-          {reserving ? "Reserving…" : event.seatsLeft < 1 ? "Sold out" : "Reserve a seat"}
+        <div className="detail-content">
+          <div>
+            <p className="detail-label">About this event</p>
+            <p className="detail-copy">{event.description}</p>
+          </div>
+          <aside className="speaker-card">
+            <span>Speaker</span>
+            <strong>{event.speaker}</strong>
+            <p>Practitioner, builder, and Project X community contributor.</p>
+          </aside>
+        </div>
+        <button type="button" onClick={respondToEvent} disabled={reserving || isPast || isSoldOut}>
+          {buttonLabel}
           <span aria-hidden="true">→</span>
         </button>
         {message && <p className="reservation-message" role="status">{message}</p>}
