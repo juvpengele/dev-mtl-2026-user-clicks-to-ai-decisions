@@ -1,5 +1,4 @@
 import { motion } from 'motion/react'
-import { DemoCue } from '../components/DemoCue'
 import { Arrow, DrawPath, NodeBox, Svg } from '../components/Diagram'
 import { NP, NPlusOneFrame, px, qStart, qTop, QueryCounter, Q_DUR, reqEnd } from '../components/NPlusOne'
 import { ChapterCard } from '../components/Story'
@@ -110,13 +109,6 @@ function Fixed() {
 const slides: SlideDef[] = [
   { id: 'card-local-agent', title: 'Chapter 8 · Local agent', chapter: CH, steps: 1, Component: () => <ChapterCard n={CH} /> },
   { id: 'agent-mcp', title: 'Claude → MCP → Traces', chapter: CH, steps: 2, Component: AgentMcp },
-  {
-    id: 'demo-agent',
-    title: 'Demo: Claude debugs locally',
-    chapter: CH,
-    steps: 1,
-    Component: () => <DemoCue title="Claude debugs locally" prompt="Users say the events page is slow. Find out why." />,
-  },
   { id: 'fixed', title: 'Fixed: one query', chapter: CH, steps: 2, Component: Fixed },
 ]
 

@@ -7,7 +7,7 @@ import { Words } from '../components/Words'
 import { talk } from '../config'
 import { useSlide } from '../deck/SlideContext'
 import type { SlideDef } from '../deck/types'
-import { WhoDecided } from './WhoDecided'
+import { CALLBACK_LINES, WhoDecidedCallback } from './WhoDecided'
 import feedbackQr from '../assets/glodie-juvenal-pengele.png'
 
 // Three QR cards side by side: sized so they fit next to the "Thank you" column.
@@ -35,10 +35,10 @@ function arc(a1: number, a2: number) {
 
 // Nodes sit at the top, right, bottom and left of the ellipse.
 const NODES = [
-  { deg: -90, text: 'AI wrote the code' },
-  { deg: 0, text: 'Observability recorded what it did' },
+  { deg: -90, text: 'AI writes the code' },
+  { deg: 0, text: 'Observability records the code' },
   { deg: 90, text: 'Agents read the traces' },
-  { deg: 180, text: 'John decided' },
+  { deg: 180, text: 'Developer\ndecides' },
 ]
 const ARCS = [arc(-58, -26), arc(26, 58), arc(122, 154), arc(206, 238)]
 // [step, delay] for each arc: arcs 1–3 lead into nodes 2–4; the last one closes the loop.
@@ -108,7 +108,7 @@ function Loop() {
             <motion.span
               animate={john && emphasis ? { scale: 1.22, color: '#f6f7f9' } : { scale: 1, color: john ? '#f6f7f9' : '#b9c0cc' }}
               transition={t.spring('bouncy', john && emphasis ? EMPHASIS_DELAY : 0)}
-              style={{ display: 'inline-block', fontSize: john ? 72 : 48, fontWeight: john ? 800 : 650, lineHeight: 1.2 }}
+              style={{ display: 'inline-block', fontSize: john ? 72 : 48, fontWeight: john ? 800 : 650, lineHeight: 1.2, whiteSpace: 'pre-line' }}
             >
               {n.text}
               {john && (
@@ -164,6 +164,18 @@ function Takeaways() {
           </motion.span>
         </motion.div>
       ))}
+    </div>
+  )
+}
+
+/* ---------- Observe what the decision caused ---------- */
+
+/** Answers the callback's "But whoever made it…": same black stage, so it reads as one thought. */
+function ObserveCaused() {
+  return (
+    <div className="slide" style={{ background: '#000' }}>
+      <Words text="We should be able to observe" className="title" stagger={0.18} spring="slow" highlight={{ observe: 'accent' }} style={{ textAlign: 'center' }} />
+      <Words text="what that decision caused." className="title" delay={1} stagger={0.24} spring="slow" style={{ textAlign: 'center', marginTop: 16 }} />
     </div>
   )
 }
@@ -255,7 +267,8 @@ function Thanks() {
 
 const slides: SlideDef[] = [
   { id: 'card-decision', title: 'Chapter 9 · The decision', chapter: CH, steps: 1, Component: () => <ChapterCard n={CH} /> },
-  { id: 'who-decided-again', title: 'Who made the decision? (callback)', chapter: CH, steps: 1, Component: () => <WhoDecided delay={0.6} /> },
+  { id: 'who-decided-again', title: 'Who made the decision? (callback)', chapter: CH, steps: CALLBACK_LINES.length + 1, Component: () => <WhoDecidedCallback delay={0.6} /> },
+  { id: 'observe-caused', title: 'Observe what the decision caused', chapter: CH, steps: 1, Component: ObserveCaused },
   { id: 'loop', title: 'The full loop', chapter: CH, steps: 4, Component: Loop },
   { id: 'takeaways', title: 'Three takeaways', chapter: CH, steps: TAKEAWAYS.length, Component: Takeaways },
   { id: 'closing', title: 'Observe, don’t just trust', chapter: CH, steps: 1, Component: Closing },
