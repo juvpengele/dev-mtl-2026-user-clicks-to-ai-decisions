@@ -232,12 +232,6 @@ Say it once. Without traces there is nothing for the agent to read.
 John goes further, on his own laptop. Claude talks to an MCP server.
 Click: the MCP server exposes tools over the traces: search_traces, find_errors.
 
-## demo-agent
-⏱ 1:40
-SWITCH TO CLAUDE.
-Paste the prompt. Let it call search_traces, find the N+1 in the trace, propose the fix.
-Read its reasoning out loud; point at the spans it cites.
-
 ## fixed
 ⏱ 0:20
 Same request, same scale. Click: 101 query spans collapse into one (LEFT JOIN + GROUP BY). ~1.9 s → ~50 ms.
@@ -246,13 +240,21 @@ Same request, same scale. Click: 101 query spans collapse into one (LEFT JOIN + 
 ⏱ 0:05
 
 ## who-decided-again
-⏱ 0:15
-Same question as the opening. Now we can answer it.
+⏱ 0:30
+"So, who made the decision?" Same question as the opening.
+Click: "Maybe the developer."
+Click: "Maybe the AI agent."
+Click: "Maybe both."
+Click: "But whoever made it…" (pause, then go to the loop)
+
+## observe-caused
+⏱ 0:10
+Finish the sentence: "…we should be able to observe what that decision caused." Let it land, then go to the loop.
 
 ## loop
 ⏱ 0:40
-One click at a time: AI wrote the code → observability recorded what it did → agents read the traces.
-Last click: John decided. The agents found it and proposed it. John decided to ship it.
+One click at a time: AI writes the code → observability records the code → agents read the traces.
+Last click: the developer decides. The agents found it and proposed it. John decided to ship it.
 
 ## takeaways
 ⏱ 0:45
